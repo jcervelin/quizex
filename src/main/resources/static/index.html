@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Quest</title>
+    <script src="https://unpkg.com/htmx.org"></script>
+   <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+<div id="quiz-area">
+    <div hx-get="/static/question-template.html" hx-target="#quiz-content" hx-trigger="load">
+        <div id="quiz-content">
+            Loading next question...
+        </div>
+    </div>
+
+</div>
+</body>
+</html>
