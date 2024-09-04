@@ -17,7 +17,7 @@ import java.nio.file.Files
 import java.nio.file.Paths
 
 fun main() {
-    loadQuestionsFromCSV("src/main/resources/questions.csv")
+    loadQuestionsFromCSV("/questions.csv")
     val app = routes(
         "/" bind Method.GET to { _: Request ->
             Response(Status.OK).body(loadStaticFile("index.html"))
