@@ -1,13 +1,12 @@
 package io.ideas.jcervelin.quizex.configs
 
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
-import kotlin.io.path.Path
 
 val questionsMap = HashMap<String, String>()
 
 fun loadQuestionsFromCSV(fileName: String): HashMap<String, String> {
-
-    csvReader().open(Path(fileName).toFile()) {
+    val resourceAsStream = {}.javaClass.getResourceAsStream(fileName)!!
+    csvReader().open(resourceAsStream) {
         readAllWithHeaderAsSequence().forEach { row ->
             row["question"]?.let { question ->
                 row["answer"]?.let { answer ->
@@ -20,7 +19,7 @@ fun loadQuestionsFromCSV(fileName: String): HashMap<String, String> {
 }
 
 fun main() {
-    val questionsMap = loadQuestionsFromCSV("questions.csv")
+    val questionsMap = loadQuestionsFromCSV("/questions.csv")
     questionsMap.forEach { (question, answer) ->
         println("$question -> $answer")
     }
