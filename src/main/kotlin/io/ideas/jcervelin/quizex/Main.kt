@@ -12,6 +12,7 @@ import org.http4k.routing.routes
 import org.http4k.routing.static
 import org.http4k.server.SunHttp
 import org.http4k.server.asServer
+import java.io.File
 import java.io.StringWriter
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -42,8 +43,7 @@ fun main() {
 }
 
 fun loadStaticFile(fileName: String): String {
-    val path = Paths.get("src/main/resources/static/$fileName")
-    return Files.readAllBytes(path).toString(Charsets.UTF_8)
+    return File({}.javaClass.classLoader.getResource("static/$fileName")!!.toURI()).readText()
 }
 
 fun label(): String {
