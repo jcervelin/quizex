@@ -15,7 +15,7 @@ fun loadQuestionsFromCSV(fileName: String): HashMap<String, String> {
             }
         }
     }
-    return questionsMap
+    return questionsMap.ifEmpty { throw RuntimeException("Questions not loaded correctly") }
 }
 
 fun main() {

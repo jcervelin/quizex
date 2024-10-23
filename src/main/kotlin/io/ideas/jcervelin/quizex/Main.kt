@@ -1,11 +1,14 @@
 package io.ideas.jcervelin.quizex
 
 import io.ideas.jcervelin.quizex.configs.loadQuestionsFromCSV
-import io.ideas.jcervelin.quizex.usecases.checkAnswer
-import io.ideas.jcervelin.quizex.usecases.randomQuestion
-import kotlinx.html.*
-import kotlinx.html.stream.appendHTML
-import org.http4k.core.*
+import io.ideas.jcervelin.quizex.usecases.handleAnswer
+import io.ideas.jcervelin.quizex.usecases.label
+import io.ideas.jcervelin.quizex.usecases.nextQuestion
+import io.ideas.jcervelin.quizex.usecases.renderQuestionContent
+import org.http4k.core.Method
+import org.http4k.core.Request
+import org.http4k.core.Response
+import org.http4k.core.Status
 import org.http4k.routing.ResourceLoader
 import org.http4k.routing.bind
 import org.http4k.routing.routes
@@ -13,27 +16,28 @@ import org.http4k.routing.static
 import org.http4k.server.SunHttp
 import org.http4k.server.asServer
 import java.io.File
-import java.io.StringWriter
-import java.nio.file.Files
-import java.nio.file.Paths
 
 fun main() {
     loadQuestionsFromCSV("/questions.csv")
     val app = routes(
-        "/" bind Method.GET to { _: Request ->
+        "/" bind Method.GET to {
             Response(Status.OK).body(loadStaticFile("index.html"))
         },
-        "/question-content" bind Method.GET to { _: Request ->
-            Response(Status.OK).body(renderQuestionContent())
+        "/question-content" bind Method.GET to {
+            val template = loadStaticFile("question-template.html")
+            Response(Status.OK).body(renderQuestionContent(template))
         },
-        "/next_question" bind Method.GET to { _: Request ->
+        "/next_question" bind Method.GET to {
             Response(Status.OK).body(nextQuestion())
         },
-        "/label" bind Method.GET to { _: Request ->
+        "/label" bind Method.GET to {
             Response(Status.OK).body(label())
         },
         "/submit_answer" bind Method.GET to { request: Request ->
-            Response(Status.OK).body(handleAnswer(request))
+            val question = request.query("question")
+            val answer = request.query("answer")
+
+            Response(Status.OK).body(handleAnswer(question, answer))
         },
         "/static" bind static(ResourceLoader.Classpath("static"))
     )
@@ -45,59 +49,3 @@ fun main() {
 fun loadStaticFile(fileName: String): String {
     return File({}.javaClass.classLoader.getResource("static/$fileName")!!.toURI()).readText()
 }
-
-fun label(): String {
-    val questionText = randomQuestion()
-    val writer = StringWriter()
-    writer.append(questionText)
-
-    writer.appendHTML().input {
-        id = "hidden-question"
-        type = InputType.hidden
-        name = "question"
-        value = questionText
-        attributes["hx-swap-oob"] = "true"
-    }
-    return writer.toString()
-}
-
-fun nextQuestion(): String {
-    val questionText = label()
-    val writer = StringWriter()
-
-    writer.append(questionText)
-
-    writer.appendHTML().input {
-        id = "answer-input"
-        type = InputType.text
-        name = "answer"
-        value = ""
-        attributes["hx-swap-oob"] = "true"
-    }
-
-    return writer.toString()
-}
-
-fun renderQuestionContent(): String {
-    val template = loadStaticFile("question-template.html")
-    val writer = StringWriter()
-    writer.append(template)
-    return writer.toString()
-}
-
-fun handleAnswer(request: Request): String {
-    val question = request.query("question")
-    val answer = request.query("answer")
-
-    if (question.isNullOrBlank() || answer.isNullOrBlank()) {
-        return "Invalid answer"
-    }
-
-    val result = if (checkAnswer(question, answer)) "Correct!" else "Incorrect!"
-    return result
-}
-
-
-
-
-
